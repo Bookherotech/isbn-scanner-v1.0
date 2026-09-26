@@ -34,8 +34,8 @@ export default function Scanner({ onScan }: ScannerProps) {
 
   async function startCamera() {
     setError('');
-    if (!selectedCamera) {
-      setError('No camera selected. Try manual entry.');
+    if (!videoRef.current) {
+      setError('Camera preview is not ready. Please try again.');
       return;
     }
     try {
@@ -43,8 +43,8 @@ export default function Scanner({ onScan }: ScannerProps) {
       const reader = new BrowserMultiFormatReader();
       readerRef.current = reader;
       const controls = await reader.decodeFromVideoDevice(
-        selectedCamera,
-        videoRef.current!,
+        selectedCamera || undefined,
+        videoRef.current,
         (result) => {
           if (result) {
             const text = result.getText();
@@ -124,13 +124,14 @@ export default function Scanner({ onScan }: ScannerProps) {
           {mode === 'camera' ? (
             <div>
               <div className="relative bg-gray-900 rounded-xl overflow-hidden aspect-video flex items-center justify-center">
-                {scanning ? (
-                  <video
-                    ref={videoRef}
-                    className="w-full h-full object-cover"
-                    playsInline
-                  />
-                ) : (
+                <video
+                  ref={videoRef}
+                  className={`w-full h-full object-cover ${scanning ? 'block' : 'hidden'}`}
+                  playsInline
+                  muted
+                  autoPlay
+                />
+                {!scanning && (
                   <div className="text-gray-500 flex flex-col items-center gap-3">
                     <CameraOff size={48} />
                     <p className="text-sm">Camera is off</p>
